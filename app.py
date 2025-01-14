@@ -43,5 +43,8 @@ def create_user():
         db.session.commit()
         return jsonify({"message": "Usuário cadastrado com sucesso."})
     return jsonify({"message": "Dados inválidos."}), 400
+@app.route("/user/<int:id>", methods=["GET"])
+def read_user():
+    
 if __name__ == "__main__":
     app.run(debug=True)
