@@ -13,4 +13,4 @@ services:
       # Opens port 3306 on the container
       - "3306"
     volumes:
-      - C:\Users\Matheus\Desktop\Rocketseat\formacao_python_rocketseat\sample-flask-auth\mysql:\var\lib\mysql
+      - ./mysql:/var/lib/mysql

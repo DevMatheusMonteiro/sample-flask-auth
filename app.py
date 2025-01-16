@@ -38,7 +38,7 @@ def create_user():
         user = User.query.filter_by(username=username).first()
         if user:
             return jsonify({"message": "Usuário já cadastrado."}), 400
-        new_user = User(username=username, password=password)
+        new_user = User(username=username, password=password, role="user")
         db.session.add(new_user)
         db.session.commit()
         return jsonify({"message": "Usuário cadastrado com sucesso."})
@@ -56,21 +56,29 @@ def update_user(id:int):
     user = User.query.get(id)
     data = request.json
     password = data.get("password")
-    if user and password:
-        user.password = password
-        db.session.commit()
-        return jsonify({"message": f"Usuário {user.id} atualizado com sucesso."})
-    return jsonify({"message": "Usuário não encontrado"}), 404
+    if not user:
+        return jsonify({"message": "Usuário não encontrado"}), 404
+    
+    if (user.id != current_user.id) and (current_user.role != "admin"):
+        return jsonify({"message": "Operação não permitida."}), 403
+    if not password:
+        return jsonify({"message": "Senha não informada"})
+    user.password = password
+    db.session.commit()
+    return jsonify({"message": f"Usuário {user.id} atualizado com sucesso."})
 @app.route("/user/<int:id>", methods=["DELETE"])
 @login_required
 def delete_user(id:int):
     user = User.query.get(id)
+
+    if not user:
+        return jsonify({"message": "Usuário não encontrado"}), 404
+    if current_user.role != "admin":
+        return jsonify({"message": "Operação não permitida"}), 403
     if user.id == current_user.id:
         return jsonify({"message": "Deleção não permitida."}), 403
-    if user:
-        db.session.delete(user)
-        db.session.commit()
-        return jsonify({"message": f"Usuário {user.id} deletado com sucesso."})
-    return jsonify({"message": "Usuário não encontrado"}), 404
+    db.session.delete(user)
+    db.session.commit()
+    return jsonify({"message": f"Usuário {user.id} deletado com sucesso."})
 if __name__ == "__main__":
     app.run(debug=True)
